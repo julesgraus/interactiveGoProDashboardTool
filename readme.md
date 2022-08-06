@@ -15,7 +15,7 @@ Make sure you've these things installed:
 ## Usage
 Make sure you've a video directory containing your gopro files, a layout xml file from ``` time4tea/gopro-dashboard-overlay```,
 and a gpx file.
-The run ```node index.js```. Answer the questions it asks you and it will generate a video with the overlay.
+Then run ```node index.js```. Answer the questions it asks you and it will generate a video with the overlay.
 
 ## Notice
 I wrote this script because i did not like to edit the same command over and over again. I did not test it using automated
