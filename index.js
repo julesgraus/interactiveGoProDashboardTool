@@ -190,7 +190,7 @@ function promptPrivacy() {
                     privacyData.long = long.length > 0 ? long : null;
                     return rl.question('What is the radius of the privacy zone' + (settings.privacyRadius?.length ? ' (default: ' + settings.privacyRadius + ')' : '') + '?\n')
                 }).then(radius => {
-                    if (radius.length === 0 && settings.privacyRadius?.length) radius = settings.radius;
+                    if (radius.length === 0 && settings.privacyRadius?.length) radius = settings.privacyRadius;
                     privacyData.radius = radius.length > 0 ? radius : null;
 
                     if (!privacyData.lat || !privacyData.long || !privacyData.radius) {
