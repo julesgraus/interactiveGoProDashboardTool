@@ -10,8 +10,7 @@ Make sure you've these things installed:
 ## Installation
 * Clone this project to your computer
 * run ```chmod +x install.sh```
-* run ```sh install.sh``
-*
+* run ```sh install.sh```
 
 ## Usage
 Make sure you've a video directory containing your gopro files, a layout xml file from ``` time4tea/gopro-dashboard-overlay```,
