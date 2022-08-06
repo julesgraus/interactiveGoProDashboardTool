@@ -20,7 +20,6 @@ function main() {
         return promptVideoDir()
     }).then(dir => {
         settings.videoDir = dir
-        output.write('videoDir set to: ' + settings.videoDir + '\n');
         return promptVideoFile();
     }).then((inputVideoFile) => {
         settings.videoFile = inputVideoFile
@@ -278,8 +277,6 @@ function makeCommandArgsForDashboard(
     privacyDiameter = null
 ) {
     const requestsPrivacy = privacyLat && privacyLong && privacyDiameter;
-
-    // console.log('>>>', requestsPrivacy ? 'yes' : 'no', privacyLat, privacyLong, privacyDiameter);
 
     return [
         'venv/bin/gopro-dashboard.py',
