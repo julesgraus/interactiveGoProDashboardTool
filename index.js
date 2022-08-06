@@ -10,6 +10,10 @@ let videoFile = null;
 let layoutFile = null;
 let gpxFile = null;
 
+/**
+ * This function is the main function and directs all other subcomponents.
+ * It is triggered at the bottom of this file
+ */
 function main() {
     promptVideoDir().then(dir => {
         videoDir = dir
@@ -23,7 +27,14 @@ function main() {
         return promptGpx()
     }).then((inputGpx) => {
         gpxFile = inputGpx
-        const args = makeCommandArgs(videoDir, videoFile, gpxFile, layoutFile, outputFileName(videoFile))
+
+        const args = makeCommandArgsForDashboard(
+            videoDir,
+            videoFile,
+            gpxFile,
+            layoutFile,
+            outputFileName(videoFile)
+        )
 
         output.write('videoDir:' + videoDir + '\n');
         output.write('videoFile:' + videoFile + '\n');
@@ -55,6 +66,11 @@ function main() {
     })
 }
 
+/**
+ * Request the user to specify the input video directory
+ *
+ * @return {PromiseLike<string>}
+ */
 function promptVideoDir() {
     return rl.question('Which directory contains the video?\n')
         .then((answer) => answer.trim())
@@ -68,6 +84,11 @@ function promptVideoDir() {
         })
 }
 
+/**
+ * Request the user to specify the video filename.
+ *
+ * @return {PromiseLike<string>}
+ */
 function promptVideoFile() {
     return readdir(videoDir).then(files => files.filter(file => file.match(/.+\.mp4$/i)))
         .then(videos => {
@@ -91,6 +112,11 @@ function promptVideoFile() {
         })
 }
 
+/**
+ * Request the user to specify the layout xml filename.
+ *
+ * @return {PromiseLike<string>}
+ */
 function promptLayout() {
     return readdir(videoDir).then(files => files.filter(file => file.match(/.+\.xml$/i)))
         .then(layouts => {
@@ -114,6 +140,11 @@ function promptLayout() {
         })
 }
 
+/**
+ * Request the user to specify the GPX filename.
+ *
+ * @return {PromiseLike<string>}
+ */
 function promptGpx() {
     return readdir(videoDir).then(files => files.filter(file => file.match(/.+\.gpx$/i)))
         .then(gpx => {
@@ -137,6 +168,12 @@ function promptGpx() {
         })
 }
 
+/**
+ * Converts a file name like this "my_mp4.mp4" to a file name like this "my_mp4_dashboard.mp4".
+ *
+ * @param inputName
+ * @return {string|*}
+ */
 function outputFileName(inputName) {
     const parts = inputName.split('.');
     if(parts < 2) return inputName;
@@ -145,18 +182,52 @@ function outputFileName(inputName) {
     return [parts.slice(0, -1).join(''), (parts[parts.length - 1])].join('.');
 }
 
-function makeCommandArgs(videoDir, videoFile, gpxFile, layoutFile, outputFileName) {
+/**
+ * @param {string} videoDir The directory that contains the gopro video files. Without trailing slash. Example: /Users/yourname/videos
+ * @param {string} videoFile The name of the video file in the videoDir that you want to apply the dashboard on. Example: GX020125.MP4
+ * @param {string} gpxFile The name of the .gpx file in the videoDir that contains route and telemetry data. Example: activity_9344542425.gpx
+ * @param layoutFile The name of the xml file in the videoDir that defines the "dashboard layout". Example: Gopro_velo.xml
+ * @param outputFileName The name of the output file. It will be placed in the videoDir. Example: GX020125_dashboard.MP4
+ * @param privacyLat The latitude of a position that various layout components should not render in. Example: 52.132633
+ * @param privacyLong The longitude of a position that various layout components should not render in. Example: 5.291266
+ * @param privacyDiameter The diameter of the lat / long position that specifies the circle, layout components should not render in: Example: 0.5
+ * @return {string[]}
+ */
+function makeCommandArgsForDashboard(
+    videoDir,
+    videoFile,
+    gpxFile,
+    layoutFile,
+    outputFileName,
+    privacyLat = null,
+    privacyLong = null,
+    privacyDiameter = null
+) {
+    const requestsPrivacy = privacyLat && privacyLong && privacyDiameter;
     return [
         'venv/bin/gopro-dashboard.py',
-        '--privacy', '51.317800,5.991870,0.5',
+
+        //Privacy settings
+        requestsPrivacy ? '--privacy' : '',
+        requestsPrivacy ? privacyLat + ',' +  privacyLong + ',' + privacyDiameter : '',
+
+        //Font settings
         '--font', 'Verdana.ttf',
-        '--layout', 'xml',
+
+        //Layout settings
+        '--layout',
+        'xml',
         '--layout-xml', videoDir + '/' + layoutFile,
+
+        //Gpx file for the telemetry data
         '--gpx', videoDir + '/' + gpxFile,
+
+        //Input file
         videoDir + '/' + videoFile,
+
+        //Output file
         videoDir + '/' + outputFileName,
     ];
 }
-
 
 main();
