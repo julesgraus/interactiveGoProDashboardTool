@@ -32,45 +32,9 @@ function main() {
         settings.gpxFile = inputGpx;
         return promptPrivacy();
     }).then((privacyData) => {
-        settings.longitude = privacyData.long;
-        settings.latitude = privacyData.lat;
-        settings.privacyRadius = privacyData.radius;
-
-
-        const args = makeCommandArgsForDashboard(
-            settings.videoDir,
-            settings.videoFile,
-            settings.gpxFile,
-            settings.layoutFile,
-            outputFileName(settings.videoFile),
-            settings.latitude,
-            settings.longitude,
-            settings.privacyRadius,
-        )
-
-        output.write('videoDir:' + settings.videoDir + '\n');
-        output.write('videoFile:' + settings.videoFile + '\n');
-        output.write('layoutFile:' + settings.layoutFile + '\n');
-        output.write('gpx:' + settings.gpxFile + '\n');
-        if(settings.latitude && settings.longitude && settings.radius) output.write('privacy lat,long,radius:' + [settings.latitude, settings.longitude, settings.radius].join(',')  + '\n');
-        output.write('outputVideoFile:' + outputFileName(settings.videoFile) + '\n\n');
-        return args;
+        return prepareCommandLineArguments(privacyData);
     }).then((args) => {
-        return new Promise((resolve, reject) => {
-            output.write('Executing command: python3 ' + args.filter(arg => arg && arg.length).join(' ') + '\n\n')
-
-            let cmd;
-            try {
-                cmd = spawn('python3', args);
-            } catch (e) {
-                output.write(e);
-            }
-            cmd.stdout.on('data', data => output.write(data + '\n'))
-            cmd.stderr.on('data', data => error_output.write(data + '\n'))
-            cmd.on('close', code => resolve(code))
-            cmd.on('error', err => reject(err))
-        })
-
+        return renderOverlay(args);
     }).then((code) => {
         saveSettings().then(() => {
             output.write('Done. Have a nice day!');
@@ -207,7 +171,7 @@ function promptGpx() {
  */
 function promptPrivacy() {
     return new Promise((resolve, reject) => {
-        let privacyData = { lat: null, long: null, radius: null};
+        let privacyData = {lat: null, long: null, radius: null};
 
         const privacyDataSet = settings.latitude?.length && settings.longitude?.length && settings.privacyRadius?.length;
 
@@ -230,7 +194,7 @@ function promptPrivacy() {
                     if (radius.length === 0 && settings.privacyRadius?.length) radius = settings.radius;
                     privacyData.radius = radius.length > 0 ? radius : null;
 
-                    if(!privacyData.lat || !privacyData.long || !privacyData.radius) {
+                    if (!privacyData.lat || !privacyData.long || !privacyData.radius) {
                         resolve(promptPrivacy());
                     }
 
@@ -341,6 +305,56 @@ function makeCommandArgsForDashboard(
         //Output file
         videoDir + '/' + outputFileName,
     ];
+}
+
+/**
+ * @param {{long: string|null, lat: string|null, radius: string|null }} privacyData
+ * @return {string[]}
+ */
+function prepareCommandLineArguments(privacyData) {
+    settings.longitude = privacyData.long;
+    settings.latitude = privacyData.lat;
+    settings.privacyRadius = privacyData.radius;
+
+
+    const args = makeCommandArgsForDashboard(
+        settings.videoDir,
+        settings.videoFile,
+        settings.gpxFile,
+        settings.layoutFile,
+        outputFileName(settings.videoFile),
+        settings.latitude,
+        settings.longitude,
+        settings.privacyRadius,
+    )
+
+    output.write('videoDir:' + settings.videoDir + '\n');
+    output.write('videoFile:' + settings.videoFile + '\n');
+    output.write('layoutFile:' + settings.layoutFile + '\n');
+    output.write('gpx:' + settings.gpxFile + '\n');
+    if (settings.latitude && settings.longitude && settings.radius) {
+        output.write('privacy lat,long,radius:' + [settings.latitude, settings.longitude, settings.radius].join(',') + '\n');
+    }
+    output.write('outputVideoFile:' + outputFileName(settings.videoFile) + '\n\n');
+    return args;
+}
+
+function renderOverlay(args) {
+    return new Promise((resolve, reject) => {
+        args = args.filter(arg => arg && arg.length);
+        output.write('Executing command: python3 ' + args.join(' ') + '\n\n')
+
+        let cmd;
+        try {
+            cmd = spawn('python3', args);
+        } catch (e) {
+            output.write(e);
+        }
+        cmd.stdout.on('data', data => output.write(data + '\n'))
+        cmd.stderr.on('data', data => error_output.write(data + '\n'))
+        cmd.on('close', code => resolve(code))
+        cmd.on('error', err => reject(err))
+    })
 }
 
 main();
