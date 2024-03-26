@@ -25,7 +25,7 @@ I wrote this script because i did not like to edit the same command over and ove
 tests etc. Use at your own risk. Just study the index.js script first when in doubt.
 
 ## Tips
-This command line does not provide an easy interface to all of time4tea tools. Refer to [https://github.com/time4tea/gopro-dashboard-overlay](their manual) for more info.
+This command line does not provide an easy interface to all of time4tea tools. Refer to [time4tea's manual](https://github.com/time4tea/gopro-dashboard-overlay) for more info.
 Nor does it provide all of the possible command line options / switches to the tool. For example, i had a video in which i drove my bicycle up to 71 kp/h. The dashboard tool stopped rendering the speed above 60 kph. I dicovered that the tool has a --gps-speed-max option that i could use to fix this. By passing --gps-speed-max 80, i could indicate that i drove max 80 kp/h. This tool does not provide a way to set that option amongst some others. But before it executes the command, it will show it to you. Allowing you to copy it, and add additional options like the --gps-speed-max option manually. 
 
 I accept pull requests if any one wants to incorporate such exta options in the tool. At the moment of writing i dont have time available to add such feature properly.
